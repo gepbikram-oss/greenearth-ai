@@ -335,7 +335,7 @@ async function generateContent() {
     testpaper: `Create a formal test paper for chapter "${ch.title}" from "${bk.title}". Include: Name/Roll No/Class header, Section A MCQ (10 marks), Section B Short Answer (15 marks), Section C Long Answer (15 marks). Total: 40 marks.`,
   };
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GKEY}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key=${GKEY}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompts[tool] }] }] })
     });
