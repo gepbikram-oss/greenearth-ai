@@ -76,17 +76,51 @@
   .chapter-preview .pages { font-size: 12px; color: #5c85c7; margin-top: 4px; }
   .btn-generate { width: 100%; padding: 14px; background: #1a1a1a; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
   .btn-generate:disabled { background: #aaa; cursor: not-allowed; }
-  .result-area { margin-top: 24px; display: none; }
-  .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .result-header h3 { font-size: 16px; font-weight: 600; }
-  .result-actions { display: flex; gap: 10px; }
-  .btn-action { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 8px; font-size: 13px; cursor: pointer; }
-  .result-content { background: white; border: 1px solid #e8e8e8; border-radius: 12px; padding: 28px; font-size: 14px; line-height: 1.8; color: #333; white-space: pre-wrap; }
   .loading { text-align: center; padding: 40px; color: #888; display: none; }
   .spinner { width: 36px; height: 36px; border: 3px solid #e8e8e8; border-top-color: #2e7d32; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .history-item { padding: 8px 10px; font-size: 12px; color: #666; cursor: pointer; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 2px 8px; }
   .history-item:hover { background: #f0f7f0; color: #2e7d32; }
+
+  /* WORKSHEET DISPLAY */
+  .worksheet-container { margin-top: 24px; display: none; }
+  .worksheet-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .worksheet-title-bar { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+  .worksheet-date { font-size: 13px; color: #888; }
+  .worksheet-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+  .btn-action { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 8px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .btn-action:hover { background: #f5f5f5; }
+  .btn-action.primary { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+
+  /* WORKSHEET PAPER */
+  .worksheet-paper { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 32px; font-family: 'Times New Roman', serif; }
+  .ws-chapter-title { text-align: center; font-size: 13px; font-weight: 700; letter-spacing: 1px; background: #f5f5f5; border: 1px solid #ddd; padding: 8px; margin-bottom: 20px; }
+  .ws-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .ws-info-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .ws-info-row span { font-weight: 600; white-space: nowrap; }
+  .ws-info-line { flex: 1; border-bottom: 1px solid #333; min-width: 80px; }
+  .ws-info-full { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 16px; }
+  .ws-section { margin-bottom: 24px; }
+  .ws-section-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; padding-bottom: 4px; border-bottom: 1px solid #333; }
+  .ws-mcq { margin-bottom: 14px; }
+  .ws-mcq-q { font-size: 12px; margin-bottom: 6px; }
+  .ws-mcq-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding-left: 16px; }
+  .ws-mcq-opt { font-size: 12px; }
+  .ws-blank { font-size: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .ws-blank-line { border-bottom: 1px solid #333; min-width: 120px; flex: 1; }
+  .ws-tof { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 8px; padding-right: 20px; }
+  .ws-tof-line { border-bottom: 1px solid #333; width: 80px; }
+  .ws-short { margin-bottom: 16px; }
+  .ws-short-q { font-size: 12px; margin-bottom: 6px; }
+  .ws-short-lines { margin-top: 4px; }
+  .ws-short-line { border-bottom: 1px solid #ccc; height: 20px; margin-bottom: 4px; }
+
+  @media print {
+    .sidebar, .topbar, .selection-card, .worksheet-actions { display: none !important; }
+    .main-content { margin-left: 0; }
+    .tool-page { padding: 0; }
+    .worksheet-paper { border: none; box-shadow: none; }
+  }
 </style>
 </head>
 <body>
@@ -186,10 +220,21 @@
         </div>
         <button class="btn-generate" id="generateBtn" onclick="generateContent()" disabled>Generate</button>
         <div class="loading" id="loadingDiv"><div class="spinner"></div><p>AI is generating content...</p></div>
-        <div class="result-area" id="resultArea">
-          <div class="result-header"><h3 id="resultTitle">Generated Content</h3><div class="result-actions"><button class="btn-action" onclick="window.print()">🖨️ Print</button><button class="btn-action" onclick="copyResult()">📋 Copy</button></div></div>
-          <div class="result-content" id="resultContent"></div>
+      </div>
+
+      <!-- WORKSHEET DISPLAY -->
+      <div class="worksheet-container" id="worksheetContainer">
+        <div class="worksheet-header-bar">
+          <div>
+            <div class="worksheet-title-bar" id="wsTitle"></div>
+            <div class="worksheet-date" id="wsDate"></div>
+          </div>
         </div>
+        <div class="worksheet-actions">
+          <button class="btn-action primary" onclick="window.print()">🖨️ Print</button>
+          <button class="btn-action" onclick="copyResult()">📋 Copy</button>
+        </div>
+        <div class="worksheet-paper" id="worksheetPaper"></div>
       </div>
     </div>
   </div>
@@ -202,7 +247,7 @@ const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const ORKEY = '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';
 
 const db = supabase.createClient(SURL, SKEY);
-let tool = '', books = [], chapters = [], user = null;
+let tool = '', books = [], chapters = [], user = null, lastRawText = '';
 
 function switchTab(t) {
   document.getElementById('tab1').classList.toggle('active', t === 'signin');
@@ -223,8 +268,7 @@ async function signIn() {
   const pass = document.getElementById('signinPassword').value;
   const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
   if (error) return showMsg(error.message, 'error');
-  user = data.user;
-  loadDashboard();
+  user = data.user; loadDashboard();
 }
 
 async function signUp() {
@@ -302,7 +346,7 @@ function openTool(t) {
   document.getElementById('toolTitle').textContent = map[t][0];
   document.getElementById('generateBtn').textContent = map[t][1];
   document.getElementById('generateBtn').disabled = true;
-  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('worksheetContainer').style.display = 'none';
   document.getElementById('loadingDiv').style.display = 'none';
   document.getElementById('chapterPreview').style.display = 'none';
   document.getElementById('bookSelect').value = '';
@@ -310,6 +354,105 @@ function openTool(t) {
   document.getElementById('toolsHome').style.display = 'none';
   document.getElementById('toolPage').style.display = 'block';
   document.getElementById('topbar').textContent = `Home › Tools › ${map[t][0]}`;
+}
+
+function parseAndRenderWorksheet(text, chapterTitle, bookTitle) {
+  const today = new Date().toLocaleDateString('en-IN');
+  document.getElementById('wsTitle').textContent = `Worksheet: ${chapterTitle}`;
+  document.getElementById('wsDate').textContent = today;
+
+  const paper = document.getElementById('worksheetPaper');
+
+  // Header
+  let html = `
+    <div class="ws-chapter-title">CHAPTER - ${chapterTitle.toUpperCase()}</div>
+    <div class="ws-info-grid">
+      <div class="ws-info-row"><span>Name:</span><div class="ws-info-line"></div></div>
+      <div class="ws-info-row"><span>Roll No:</span><div class="ws-info-line"></div><span>Class:</span><div class="ws-info-line"></div><span>Section:</span><div class="ws-info-line"></div></div>
+    </div>
+    <div class="ws-info-grid" style="margin-bottom:16px;">
+      <div class="ws-info-row"><span>Date:</span><div class="ws-info-line"></div></div>
+      <div class="ws-info-row"><span>Grade:</span><div class="ws-info-line" style="max-width:60px;"></div><span style="margin-left:40px;">Teacher's Signature:</span><div class="ws-info-line"></div></div>
+    </div>
+  `;
+
+  // Parse sections from AI text
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+
+  let currentSection = '';
+  let mcqs = [], blanks = [], tofs = [], shorts = [];
+  let currentMcq = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lower = line.toLowerCase();
+
+    if (lower.includes('multiple choice') || lower.includes('mcq')) { currentSection = 'mcq'; continue; }
+    if (lower.includes('fill in the blank') || lower.includes('fill in blank')) { currentSection = 'blank'; continue; }
+    if (lower.includes('true or false') || lower.includes('true/false')) { currentSection = 'tof'; continue; }
+    if (lower.includes('short answer') || lower.includes('short question')) { currentSection = 'short'; continue; }
+
+    if (currentSection === 'mcq') {
+      if (/^\d+[\.\)]/.test(line)) {
+        if (currentMcq) mcqs.push(currentMcq);
+        currentMcq = { q: line.replace(/^\d+[\.\)]\s*/, ''), opts: [] };
+      } else if (/^[A-Da-d][\.\)]/.test(line) && currentMcq) {
+        currentMcq.opts.push(line);
+      }
+    } else if (currentSection === 'blank') {
+      if (/^\d+[\.\)]/.test(line)) blanks.push(line.replace(/^\d+[\.\)]\s*/, ''));
+    } else if (currentSection === 'tof') {
+      if (/^\d+[\.\)]/.test(line)) tofs.push(line.replace(/^\d+[\.\)]\s*/, ''));
+    } else if (currentSection === 'short') {
+      if (/^\d+[\.\)]/.test(line)) shorts.push(line.replace(/^\d+[\.\)]\s*/, ''));
+    }
+  }
+  if (currentMcq) mcqs.push(currentMcq);
+
+  // Render MCQ
+  if (mcqs.length > 0) {
+    html += `<div class="ws-section"><div class="ws-section-title">Multiple Choice Questions</div>`;
+    mcqs.forEach((m, i) => {
+      html += `<div class="ws-mcq"><div class="ws-mcq-q">${i+1}. ${m.q}</div><div class="ws-mcq-opts">`;
+      m.opts.forEach(o => html += `<div class="ws-mcq-opt">${o}</div>`);
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Render Fill in Blanks
+  if (blanks.length > 0) {
+    html += `<div class="ws-section"><div class="ws-section-title">Fill in the Blanks</div>`;
+    blanks.forEach((b, i) => {
+      html += `<div class="ws-blank">${i+1}. ${b.replace(/_{2,}/g, '')} <div class="ws-blank-line"></div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Render True or False
+  if (tofs.length > 0) {
+    html += `<div class="ws-section"><div class="ws-section-title">True or False</div>`;
+    tofs.forEach((t, i) => {
+      html += `<div class="ws-tof"><span>${i+1}. ${t}</span><div class="ws-tof-line"></div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Render Short Answer
+  if (shorts.length > 0) {
+    html += `<div class="ws-section"><div class="ws-section-title">Short Answer Questions</div>`;
+    shorts.forEach((s, i) => {
+      html += `<div class="ws-short"><div class="ws-short-q">${i+1}. ${s}</div><div class="ws-short-lines"><div class="ws-short-line"></div><div class="ws-short-line"></div><div class="ws-short-line"></div></div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // If parsing failed, show raw text nicely
+  if (mcqs.length === 0 && blanks.length === 0 && tofs.length === 0 && shorts.length === 0) {
+    html += `<div style="font-size:13px;line-height:1.8;white-space:pre-wrap;">${text}</div>`;
+  }
+
+  paper.innerHTML = html;
 }
 
 async function generateContent() {
@@ -320,16 +463,66 @@ async function generateContent() {
   if (!ch || !bk) return;
   document.getElementById('generateBtn').disabled = true;
   document.getElementById('loadingDiv').style.display = 'block';
-  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('worksheetContainer').style.display = 'none';
+
   const prompts = {
-    worksheet: `Create a comprehensive worksheet for chapter "${ch.title}" from "${bk.title}". Include: 5 MCQs with 4 options each, 4 Fill in the Blanks, 4 True or False, 3 Short Answer Questions. Format clearly.`,
+    worksheet: `Create a worksheet for chapter "${ch.title}" from "${bk.title}". Use EXACTLY this format:
+
+Multiple Choice Questions
+1. [question]
+A. [option] B. [option] C. [option] D. [option]
+2. [question]
+A. [option] B. [option] C. [option] D. [option]
+3. [question]
+A. [option] B. [option] C. [option] D. [option]
+4. [question]
+A. [option] B. [option] C. [option] D. [option]
+5. [question]
+A. [option] B. [option] C. [option] D. [option]
+
+Fill in the Blanks
+1. [sentence with blank ____]
+2. [sentence with blank ____]
+3. [sentence with blank ____]
+4. [sentence with blank ____]
+
+True or False
+1. [statement]
+2. [statement]
+3. [statement]
+4. [statement]
+5. [statement]
+
+Short Answer Questions
+1. [question]
+2. [question]
+3. [question]`,
+
     lessonplan: `Create a detailed lesson plan for chapter "${ch.title}" from "${bk.title}". Include: Learning Objectives, Materials, Introduction (5 min), Main Activities (30 min), Assessment, Homework.`,
     chatwithbook: `Provide a comprehensive summary and key points from chapter "${ch.title}" from "${bk.title}". Include main concepts, definitions, and key takeaways.`,
     customworksheet: `Create a customized worksheet for "${ch.title}" from "${bk.title}" with: Easy MCQs (3), Medium Fill in Blanks (3), Hard Short Answer (2), one Application Question. Label difficulty levels.`,
-    answerkey: `Create a detailed answer key for chapter "${ch.title}" from "${bk.title}". Include: MCQ answers with explanations, Fill in Blanks, True/False with reasons, Short Answer model answers.`,
+    answerkey: `Create a detailed answer key for chapter "${ch.title}" from "${bk.title}". Include: MCQ answers with explanations, Fill in Blanks answers, True/False with reasons, Short Answer model answers.`,
     ppt: `Create a PPT outline for chapter "${ch.title}" from "${bk.title}". Make 8-10 slides with titles, 3-4 bullet points each, speaker notes. Format: SLIDE 1:, SLIDE 2: etc.`,
-    testpaper: `Create a formal test paper for chapter "${ch.title}" from "${bk.title}". Include: Name/Roll No/Class header, Section A MCQ (10 marks), Section B Short Answer (15 marks), Section C Long Answer (15 marks). Total: 40 marks.`,
+    testpaper: `Create a formal test paper for chapter "${ch.title}" from "${bk.title}". Use EXACTLY this format:
+
+Multiple Choice Questions
+1. [question]
+A. [option] B. [option] C. [option] D. [option]
+(repeat for 10 questions)
+
+Fill in the Blanks
+1. [sentence with blank]
+(repeat for 5 questions)
+
+Short Answer Questions
+1. [question] (2 marks)
+(repeat for 5 questions)
+
+Long Answer Questions
+1. [question] (5 marks)
+2. [question] (5 marks)`,
   };
+
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -346,14 +539,27 @@ async function generateContent() {
     });
     const d = await res.json();
     const text = d.choices?.[0]?.message?.content || 'Error. Please try again.';
-    document.getElementById('resultContent').textContent = text;
-    document.getElementById('resultTitle').textContent = document.getElementById('toolTitle').textContent;
-    document.getElementById('resultArea').style.display = 'block';
-    if (user) { await db.from('generated_content').insert({ user_id: user.id, tool_type: tool, book_id: bId, chapter_id: cId, content: text }); loadHistory(); }
+    lastRawText = text;
+
+    if (tool === 'worksheet' || tool === 'testpaper' || tool === 'customworksheet') {
+      parseAndRenderWorksheet(text, ch.title, bk.title);
+    } else {
+      document.getElementById('wsTitle').textContent = document.getElementById('toolTitle').textContent;
+      document.getElementById('wsDate').textContent = new Date().toLocaleDateString('en-IN');
+      document.getElementById('worksheetPaper').innerHTML = `<div style="font-size:13px;line-height:1.8;white-space:pre-wrap;">${text}</div>`;
+    }
+
+    document.getElementById('worksheetContainer').style.display = 'block';
+
+    if (user) {
+      await db.from('generated_content').insert({ user_id: user.id, tool_type: tool, book_id: bId, chapter_id: cId, content: text });
+      loadHistory();
+    }
   } catch(e) {
-    document.getElementById('resultContent').textContent = 'Error: ' + e.message;
-    document.getElementById('resultArea').style.display = 'block';
+    document.getElementById('worksheetPaper').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+    document.getElementById('worksheetContainer').style.display = 'block';
   }
+
   document.getElementById('loadingDiv').style.display = 'none';
   document.getElementById('generateBtn').disabled = false;
 }
@@ -371,7 +577,10 @@ async function loadHistory() {
   });
 }
 
-function copyResult() { navigator.clipboard.writeText(document.getElementById('resultContent').textContent); alert('Copied!'); }
+function copyResult() {
+  navigator.clipboard.writeText(lastRawText);
+  alert('Copied!');
+}
 
 db.auth.getSession().then(({ data: { session } }) => {
   if (session) { user = session.user; loadDashboard(); }
