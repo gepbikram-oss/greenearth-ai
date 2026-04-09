@@ -54,13 +54,9 @@
   .tool-card { background: white; border: 1px solid #e8e8e8; border-radius: 14px; padding: 28px 24px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
   .tool-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
   .tool-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; }
-  .tool-card.green::after { background: #66bb6a; }
-  .tool-card.blue::after { background: #64b5f6; }
-  .tool-card.purple::after { background: #ba68c8; }
-  .tool-card.orange::after { background: #ffb74d; }
-  .tool-card.teal::after { background: #4db6ac; }
-  .tool-card.pink::after { background: #f48fb1; }
-  .tool-card.red::after { background: #ef9a9a; }
+  .tool-card.green::after { background: #66bb6a; } .tool-card.blue::after { background: #64b5f6; }
+  .tool-card.purple::after { background: #ba68c8; } .tool-card.orange::after { background: #ffb74d; }
+  .tool-card.teal::after { background: #4db6ac; } .tool-card.pink::after { background: #f48fb1; } .tool-card.red::after { background: #ef9a9a; }
   .tool-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 16px; }
   .tool-icon.green { background: #e8f5e9; } .tool-icon.blue { background: #e3f2fd; } .tool-icon.purple { background: #f3e5f5; }
   .tool-icon.orange { background: #fff3e0; } .tool-icon.teal { background: #e0f2f1; } .tool-icon.pink { background: #fce4ec; } .tool-icon.red { background: #ffebee; }
@@ -203,7 +199,7 @@
 <script>
 const SURL = 'https://bwnxwzbmbduksvzmouqy.supabase.co';
 const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3bnh3emJtYmR1a3N2em1vdXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MzEzMzgsImV4cCI6MjA5MTIwNzMzOH0.X1eDQfLvkUyqYijI3O8TH6FhtLzgpWIMdqEDIUZsJ-w';
-const GKEY = 'AIzaSyCVboHA4NEJOIp-bfZaH_q2d9EQ0DMjwRE';
+const ORKEY = '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';
 
 const db = supabase.createClient(SURL, SKEY);
 let tool = '', books = [], chapters = [], user = null;
@@ -331,16 +327,25 @@ async function generateContent() {
     chatwithbook: `Provide a comprehensive summary and key points from chapter "${ch.title}" from "${bk.title}". Include main concepts, definitions, and key takeaways.`,
     customworksheet: `Create a customized worksheet for "${ch.title}" from "${bk.title}" with: Easy MCQs (3), Medium Fill in Blanks (3), Hard Short Answer (2), one Application Question. Label difficulty levels.`,
     answerkey: `Create a detailed answer key for chapter "${ch.title}" from "${bk.title}". Include: MCQ answers with explanations, Fill in Blanks, True/False with reasons, Short Answer model answers.`,
-    ppt: `Create a PPT outline for chapter "${ch.title}" from "${bk.title}". Make 8-10 slides with titles, 3-4 bullet points each, and speaker notes. Format: SLIDE 1:, SLIDE 2: etc.`,
+    ppt: `Create a PPT outline for chapter "${ch.title}" from "${bk.title}". Make 8-10 slides with titles, 3-4 bullet points each, speaker notes. Format: SLIDE 1:, SLIDE 2: etc.`,
     testpaper: `Create a formal test paper for chapter "${ch.title}" from "${bk.title}". Include: Name/Roll No/Class header, Section A MCQ (10 marks), Section B Short Answer (15 marks), Section C Long Answer (15 marks). Total: 40 marks.`,
   };
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GKEY}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompts[tool] }] }] })
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ORKEY}`,
+        'HTTP-Referer': 'https://greenearth-ai.vercel.app',
+        'X-Title': 'GreenEarth AI'
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.3-8b-instruct:free',
+        messages: [{ role: 'user', content: prompts[tool] }]
+      })
     });
     const d = await res.json();
-    const text = d.candidates?.[0]?.content?.parts?.[0]?.text || 'Error. Please try again.';
+    const text = d.choices?.[0]?.message?.content || 'Error. Please try again.';
     document.getElementById('resultContent').textContent = text;
     document.getElementById('resultTitle').textContent = document.getElementById('toolTitle').textContent;
     document.getElementById('resultArea').style.display = 'block';
