@@ -275,7 +275,7 @@ async function extractChapters(file, bookTitle) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ORKEY}`, 'HTTP-Referer': 'https://greenearth-ai.vercel.app', 'X-Title': 'GreenEarth Admin' },
         body: JSON.stringify({
-          model: 'google/gemma-3-27b-it:free',
+          model: 'mistralai/mistral-7b-instruct:free',
           messages: [{ role: 'user', content: `This is a textbook called "${bookTitle}". Extract all chapter titles and page numbers. Return ONLY a JSON array like this:
 [{"title":"Chapter 1 - Name","page_start":1,"page_end":20},{"title":"Chapter 2 - Name","page_start":21,"page_end":40}]
 No explanation, just JSON array. Base64 PDF: ${base64.substring(0, 2000)}` }]
